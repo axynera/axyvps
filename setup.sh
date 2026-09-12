@@ -30,7 +30,7 @@ ssh-keygen -A
 # 3. KONFIGURASI OPENSSH & BANNER (MOTD)
 # ====================================================================
 echo "[+] Menyiapkan konfigurasi OpenSSH & Banner Axynera Cloud..."
-cat << 'SSHCFG' > /etc/ssh/sshd_config
+cat > /etc/ssh/sshd_config << 'SSHCFG'
 Port 22
 Protocol 2
 HostKey /etc/ssh/ssh_host_rsa_key
@@ -51,7 +51,7 @@ UsePAM no
 Subsystem sftp /usr/libexec/sftp-server
 SSHCFG
 
-cat << 'MOTDCFG' > /etc/motd
+cat > /etc/motd << 'MOTDCFG'
 ====================================================================
                  Welcome to Axynera Cloud Services
 ====================================================================
@@ -84,7 +84,7 @@ echo "client1 ALL=(ALL) ALL" > /etc/sudoers.d/client1
 chmod 0440 /etc/sudoers.d/client1
 chown -R client1:client1 /home/client1
 
-cat << 'BASHCFG' >> /home/client1/.bashrc
+cat >> /home/client1/.bashrc << 'BASHCFG'
 export PS1="\[\033[01;32m\]client1@axynera-vps\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
 BASHCFG
 
@@ -93,7 +93,7 @@ BASHCFG
 # ====================================================================
 
 # A. Start Service
-cat << 'STARTSVC' > "$AXY_BIN/start.sh"
+cat > "$AXY_BIN/start.sh" << 'STARTSVC'
 #!/bin/bash
 AXY_LOG="/opt/axynera/logs"
 
@@ -117,7 +117,7 @@ echo "[+] All Axynera Cloud services are live."
 STARTSVC
 
 # B. Stop Service
-cat << 'STOPSVC' > "$AXY_BIN/stop.sh"
+cat > "$AXY_BIN/stop.sh" << 'STOPSVC'
 #!/bin/bash
 echo "[-] Stopping Axynera Cloud Services..."
 pkill -x sshd || true
@@ -126,7 +126,7 @@ echo "[OK] All Axynera services stopped."
 STOPSVC
 
 # C. Reboot Service Container
-cat << 'REBOOTSVC' > "$AXY_BIN/reboot.sh"
+cat > "$AXY_BIN/reboot.sh" << 'REBOOTSVC'
 #!/bin/bash
 echo "[!] Rebooting Axynera VPS Container..."
 echo "[+] Stopping running instances..."
@@ -143,7 +143,7 @@ echo "[OK] Axynera VPS Node successfully rebooted!"
 REBOOTSVC
 
 # D. Uninstall / Clean Reset
-cat << 'UNINSVC' > "$AXY_BIN/uninstall.sh"
+cat > "$AXY_BIN/uninstall.sh" << 'UNINSVC'
 #!/bin/bash
 echo "[!] UNINSTALLING AXYNERA VPS SYSTEM..."
 /opt/axynera/bin/stop.sh
