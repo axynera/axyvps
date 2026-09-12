@@ -17,7 +17,20 @@ mkdir -p "$AXY_BIN" "$AXY_LOG" "$AXY_CFG"
 # ====================================================================
 echo "[+] Menginstal paket dependency server..."
 apk update && apk upgrade
-apk add openssh sudo bash curl wget nano htop openrc shadow cloudflared
+apk add openssh sudo bash curl wget nano htop openrc shadow
+
+echo "[+] Mengunduh binary resmi Cloudflare Tunnel (cloudflared)..."
+ARCH=$(uname -m)
+case "$ARCH" in
+    aarch64|arm64) CF_ARCH="arm64" ;;
+    armv7l|armhf|arm) CF_ARCH="arm" ;;
+    x86_64) CF_ARCH="amd64" ;;
+    i386|i686) CF_ARCH="386" ;;
+    *) CF_ARCH="arm64" ;;
+esac
+
+curl -L "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${CF_ARCH}" -o /usr/local/bin/cloudflared
+chmod +x /usr/local/bin/cloudflared
 
 echo "[+] Mengatur hostname sistem..."
 hostname "axynera-vps-node1"
@@ -103,7 +116,7 @@ printf '%s\n' \
 'fi' \
 '' \
 'if ! pgrep -x "cloudflared" > /dev/null; then' \
-'    nohup cloudflared tunnel --url ssh://localhost:22 > "$AXY_LOG/cloudflared.log" 2>&1 &' \
+'    nohup /usr/local/bin/cloudflared tunnel --url ssh://localhost:22 > "$AXY_LOG/cloudflared.log" 2>&1 &' \
 '    echo "[OK] Cloudflare Backbone Tunnel active."' \
 'else' \
 '    echo "[INFO] Cloudflare Tunnel is active."' \
