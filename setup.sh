@@ -86,9 +86,7 @@ printf '%s\n' \
 # ====================================================================
 # 4. MANAJEMEN AKUN ADMIN (root)
 # ====================================================================
-echo "[!] Atur password baru untuk akun root:"
-passwd root
-
+echo "[+] Menyiapkan lingkungan akun root..."
 mkdir -p /root
 printf '%s\n' 'export PS1="\[\033[01;31m\]root@axynera-vps\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\# "' >> /root/.bashrc
 
