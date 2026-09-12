@@ -30,45 +30,43 @@ ssh-keygen -A
 # 3. KONFIGURASI OPENSSH & BANNER (MOTD)
 # ====================================================================
 echo "[+] Menyiapkan konfigurasi OpenSSH & Banner Axynera Cloud..."
-cat > /etc/ssh/sshd_config << 'SSHCFG'
-Port 22
-Protocol 2
-HostKey /etc/ssh/ssh_host_rsa_key
-HostKey /etc/ssh/ssh_host_ecdsa_key
-HostKey /etc/ssh/ssh_host_ed25519_key
+printf '%s\n' \
+'Port 22' \
+'Protocol 2' \
+'HostKey /etc/ssh/ssh_host_rsa_key' \
+'HostKey /etc/ssh/ssh_host_ecdsa_key' \
+'HostKey /etc/ssh/ssh_host_ed25519_key' \
+'' \
+'PermitRootLogin yes' \
+'PasswordAuthentication yes' \
+'PubkeyAuthentication yes' \
+'AuthorizedKeysFile .ssh/authorized_keys' \
+'' \
+'ClientAliveInterval 60' \
+'ClientAliveCountMax 3' \
+'' \
+'X11Forwarding no' \
+'AllowTcpForwarding yes' \
+'UsePAM no' \
+'Subsystem sftp /usr/libexec/sftp-server' > /etc/ssh/sshd_config
 
-PermitRootLogin yes
-PasswordAuthentication yes
-PubkeyAuthentication yes
-AuthorizedKeysFile .ssh/authorized_keys
-
-ClientAliveInterval 60
-ClientAliveCountMax 3
-
-X11Forwarding no
-AllowTcpForwarding yes
-UsePAM no
-Subsystem sftp /usr/libexec/sftp-server
-SSHCFG
-
-cat > /etc/motd << 'MOTDCFG'
-====================================================================
-                 Welcome to Axynera Cloud Services
-====================================================================
-  Instance Domain  : Axynera Enterprise Cloud Instance
-  OS Environment   : Alpine Linux Enterprise (x86_64 Cloud)
-  Hypervisor Engine: Axynera Container Virtualization
-  RAM Allocation   : 1024 MB Dedicated RAM + 1024 MB SWAP
-  Network Uplink   : High-Speed Encrypted Cloudflare Backbone
-  System Status    : HEALTHY (24/7 Uptime Guaranteed)
-  Dashboard Portal : https://axynera.com
---------------------------------------------------------------------
-  SECURITY WARNING:
-  - Unauthorized access is strictly prohibited.
-  - DDoS attacks, crypto mining, and torrenting are monitored
-    and will result in instant account suspension.
-====================================================================
-MOTDCFG
+printf '%s\n' \
+'====================================================================' \
+'                 Welcome to Axynera Cloud Services' \
+'====================================================================' \
+'  Instance Domain  : Axynera Enterprise Cloud Instance' \
+'  OS Environment   : Alpine Linux Enterprise (x86_64 Cloud)' \
+'  Hypervisor Engine: Axynera Container Virtualization' \
+'  RAM Allocation   : 1024 MB Dedicated RAM + 1024 MB SWAP' \
+'  Network Uplink   : High-Speed Encrypted Cloudflare Backbone' \
+'  System Status    : HEALTHY (24/7 Uptime Guaranteed)' \
+'  Dashboard Portal : https://axynera.com' \
+'--------------------------------------------------------------------' \
+'  SECURITY WARNING:' \
+'  - Unauthorized access is strictly prohibited.' \
+'  - DDoS attacks, crypto mining, and torrenting are monitored' \
+'    and will result in instant account suspension.' \
+'====================================================================' > /etc/motd
 
 # ====================================================================
 # 4. MANAJEMEN USER PENYEWA (client1)
@@ -84,74 +82,68 @@ echo "client1 ALL=(ALL) ALL" > /etc/sudoers.d/client1
 chmod 0440 /etc/sudoers.d/client1
 chown -R client1:client1 /home/client1
 
-cat >> /home/client1/.bashrc << 'BASHCFG'
-export PS1="\[\033[01;32m\]client1@axynera-vps\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
-BASHCFG
+printf '%s\n' 'export PS1="\[\033[01;32m\]client1@axynera-vps\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/client1/.bashrc
 
 # ====================================================================
 # 5. SKRIP KONTROL SERVICE (START, STOP, REBOOT, UNINSTALL)
 # ====================================================================
 
 # A. Start Service
-cat > "$AXY_BIN/start.sh" << 'STARTSVC'
-#!/bin/bash
-AXY_LOG="/opt/axynera/logs"
-
-echo "[+] Starting Axynera Cloud Services..."
-
-if ! pgrep -x "sshd" > /dev/null; then
-    /usr/sbin/sshd
-    echo "[OK] OpenSSH Server running on port 22"
-else
-    echo "[INFO] OpenSSH Server is active."
-fi
-
-if ! pgrep -x "cloudflared" > /dev/null; then
-    nohup cloudflared tunnel --url ssh://localhost:22 > "$AXY_LOG/cloudflared.log" 2>&1 &
-    echo "[OK] Cloudflare Backbone Tunnel active."
-else
-    echo "[INFO] Cloudflare Tunnel is active."
-fi
-
-echo "[+] All Axynera Cloud services are live."
-STARTSVC
+printf '%s\n' \
+'#!/bin/bash' \
+'AXY_LOG="/opt/axynera/logs"' \
+'' \
+'echo "[+] Starting Axynera Cloud Services..."' \
+'' \
+'if ! pgrep -x "sshd" > /dev/null; then' \
+'    /usr/sbin/sshd' \
+'    echo "[OK] OpenSSH Server running on port 22"' \
+'else' \
+'    echo "[INFO] OpenSSH Server is active."' \
+'fi' \
+'' \
+'if ! pgrep -x "cloudflared" > /dev/null; then' \
+'    nohup cloudflared tunnel --url ssh://localhost:22 > "$AXY_LOG/cloudflared.log" 2>&1 &' \
+'    echo "[OK] Cloudflare Backbone Tunnel active."' \
+'else' \
+'    echo "[INFO] Cloudflare Tunnel is active."' \
+'fi' \
+'' \
+'echo "[+] All Axynera Cloud services are live."' > "$AXY_BIN/start.sh"
 
 # B. Stop Service
-cat > "$AXY_BIN/stop.sh" << 'STOPSVC'
-#!/bin/bash
-echo "[-] Stopping Axynera Cloud Services..."
-pkill -x sshd || true
-pkill -x cloudflared || true
-echo "[OK] All Axynera services stopped."
-STOPSVC
+printf '%s\n' \
+'#!/bin/bash' \
+'echo "[-] Stopping Axynera Cloud Services..."' \
+'pkill -x sshd || true' \
+'pkill -x cloudflared || true' \
+'echo "[OK] All Axynera services stopped."' > "$AXY_BIN/stop.sh"
 
 # C. Reboot Service Container
-cat > "$AXY_BIN/reboot.sh" << 'REBOOTSVC'
-#!/bin/bash
-echo "[!] Rebooting Axynera VPS Container..."
-echo "[+] Stopping running instances..."
-/opt/axynera/bin/stop.sh
-
-echo "[+] Flushing cache and temporary memory..."
-rm -rf /tmp/* 2>/dev/null || true
-
-sleep 2
-
-echo "[+] Restarting Axynera Cloud Services..."
-/opt/axynera/bin/start.sh
-echo "[OK] Axynera VPS Node successfully rebooted!"
-REBOOTSVC
+printf '%s\n' \
+'#!/bin/bash' \
+'echo "[!] Rebooting Axynera VPS Container..."' \
+'echo "[+] Stopping running instances..."' \
+'/opt/axynera/bin/stop.sh' \
+'' \
+'echo "[+] Flushing cache and temporary memory..."' \
+'rm -rf /tmp/* 2>/dev/null || true' \
+'' \
+'sleep 2' \
+'' \
+'echo "[+] Restarting Axynera Cloud Services..."' \
+'/opt/axynera/bin/start.sh' \
+'echo "[OK] Axynera VPS Node successfully rebooted!"' > "$AXY_BIN/reboot.sh"
 
 # D. Uninstall / Clean Reset
-cat > "$AXY_BIN/uninstall.sh" << 'UNINSVC'
-#!/bin/bash
-echo "[!] UNINSTALLING AXYNERA VPS SYSTEM..."
-/opt/axynera/bin/stop.sh
-userdel -r client1 2>/dev/null || true
-rm -f /etc/sudoers.d/client1
-rm -rf /opt/axynera
-echo "[OK] Axynera system completely removed."
-UNINSVC
+printf '%s\n' \
+'#!/bin/bash' \
+'echo "[!] UNINSTALLING AXYNERA VPS SYSTEM..."' \
+'/opt/axynera/bin/stop.sh' \
+'userdel -r client1 2>/dev/null || true' \
+'rm -f /etc/sudoers.d/client1' \
+'rm -rf /opt/axynera' \
+'echo "[OK] Axynera system completely removed."' > "$AXY_BIN/uninstall.sh"
 
 chmod +x "$AXY_BIN/"*.sh
 
@@ -165,7 +157,7 @@ ln -sf "$AXY_BIN/uninstall.sh" /usr/local/bin/axynera-reset
 
 # Override perintah reboot standar Linux
 ln -sf "$AXY_BIN/reboot.sh" /sbin/reboot 2>/dev/null || true
-ln -sf "$AXY_BIN/reboot.sh" /usr/sbin/reboot 2>/dev/null || true
+ln -sf "$AXY_BIN/reboot.sh" /usr/local/bin/reboot 2>/dev/null || true
 
 # ====================================================================
 # 7. EKSEKUSI PERTAMA KALI
